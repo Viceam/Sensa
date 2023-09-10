@@ -2,7 +2,6 @@ import redis
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import queue
-import jieba
 
 driver = webdriver.Chrome();
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
