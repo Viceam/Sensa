@@ -23,6 +23,7 @@ __pycache__
 *.ipr
 mvnw
 mvnw.*
+test
 
 ### NetBeans ###
 /nbproject/private/
