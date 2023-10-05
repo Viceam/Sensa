@@ -42,5 +42,3 @@ def do_crawler(start_url, _xpath):
             conn.rpush("news" + str(news_id), news_url, news_title)
             get_content(news_url, news_id)
 
-
-
