@@ -21,3 +21,4 @@ if __name__ == '__main__':
     read_words("cn_stopwords.txt")
     read_words("hit_stopwords.txt")
     read_words("scu_stopwords.txt")
+    read_words("stopwords5.txt")
