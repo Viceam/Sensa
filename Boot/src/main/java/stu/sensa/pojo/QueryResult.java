@@ -3,6 +3,7 @@ package stu.sensa.pojo;
 public class QueryResult {
     private String url;
     private String title;
+    private String snippet;
 
     public String getUrl() {
         return url;
@@ -20,8 +21,17 @@ public class QueryResult {
         this.title = title;
     }
 
-    public QueryResult(String url, String title) {
+    public String getSnippet() {
+        return snippet;
+    }
+
+    public void setSnippet(String snippet) {
+        this.snippet = snippet;
+    }
+
+    public QueryResult(String url, String title, String snippet) {
         this.url = url;
         this.title = title;
+        this.snippet = snippet;
     }
 }
