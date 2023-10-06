@@ -1,5 +1,5 @@
 import redis
-import jieba
+import jieba 
 import math
 
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
