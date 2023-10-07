@@ -4,7 +4,7 @@ import jieba
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
-def index_build(mode):
+def tf_get(mode):
     for i in range(1, 778):
         print("正在处理新闻" + str(i))
         text = conn.lindex("news" + str(i), mode)
@@ -22,6 +22,21 @@ def index_build(mode):
     print("OK")
 
 
+def tfidf_calculate():
+    keys = conn.keys()
+    for key in keys:
+        if key.startswith("index") and not key.startswith("indexed"):
+            # print(key[5:])
+            news = conn.zrange(key, 0, -1)
+            for new in news:
+                f = conn.zscore(key, new)
+                f *= float(conn.get("idf" + key[5:]))
+                conn.zadd(key, {new: f})
+            print(key + "Done.")
+    print("All Done.")
+
+
 if __name__ == '__main__':
-    index_build(1)
-    index_build(2)
+    tf_get(1)
+    tf_get(2)
+    tfidf_calculate()

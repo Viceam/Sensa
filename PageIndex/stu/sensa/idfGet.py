@@ -1,5 +1,5 @@
 import redis
-import jieba 
+import jieba
 import math
 
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
@@ -10,7 +10,12 @@ def idf_get():
     sum = conn.get("news_num")
     for key in keys:
         if key.startswith("index") and not key.startswith("indexed"):
-            idf = math.log(sum / conn.zcard("key"))
+            print(key)
+            idf = math.log(int(sum) / conn.zcard(key))
+            word = key[5:]
+            conn.set("idf" + word, idf)
+
+    print("ok")
 
 
 if __name__ == '__main__':
