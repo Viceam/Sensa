@@ -3,54 +3,39 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <!-- 引入bootstrap和vue的CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
-<!-- 创建一个vue实例，绑定到id为app的div元素 -->
 <div id="app">
-    <!-- 创建一个导航栏，使用bootstrap的navbar组件 -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <!-- 导航栏的logo，使用Sensa的图标 -->
         <a class="navbar-brand" href="#">
             <img src="img/sensa.jpg" width="30" height="30" alt="">
         </a>
-        <!-- 导航栏的标题，使用Sensa的名称 -->
         <a class="navbar-brand" href="#">Sensa</a>
-        <!-- 导航栏的折叠按钮，用于在小屏幕上显示或隐藏菜单项 -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="切换导航">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <!-- 导航栏的菜单项，使用bootstrap的collapse组件 -->
         <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
-            <!-- 菜单项只包含一个搜索框和一个搜索按钮，使用bootstrap的form-inline组件 -->
             <form class="form-inline my-2 my-lg-0">
-                <!-- 搜索框，使用bootstrap的form-control组件，绑定到vue实例的query数据 -->
                 <input class="form-control mr-sm-2" type="search" placeholder="在Sensa中搜索" aria-label="搜索" v-model="query">
-                <!-- 搜索按钮，使用bootstrap的btn组件，绑定到vue实例的search方法 -->
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit" v-on:click.prevent="search">搜索</button>
             </form>
         </div>
     </nav>
 
-    <!-- 创建一个内容区域，用于显示搜索结果或其他信息 -->
+    <!--    搜索结果-->
     <div class="container-fluid mt-3">
-        <!-- 如果没有搜索结果，显示一个欢迎信息 -->
         <div v-if="results.length == 0">
             <h1>欢迎使用Sensa搜索</h1>
             <p>输入您想要搜索的内容，然后点击搜索按钮或按回车键。</p>
         </div>
-        <!-- 如果有搜索结果，显示一个列表，使用bootstrap的list-group组件 -->
         <div v-else>
             <h3>搜索结果</h3>
             <ul class="list-group">
-                <!-- 遍历搜索结果，每个结果显示一个列表项，使用bootstrap的list-group-item组件 -->
                 <li class="list-group-item" v-for="result in results">
-                    <!-- 结果的标题，使用一个链接，绑定到结果的url属性 -->
                     <a :href="result.url"><h5>{{ result.title }}</h5></a>
-                    <!-- 结果的摘要，使用一个段落，绑定到结果的snippet属性 -->
                     <p>{{ result.snippet }}</p>
                 </li>
             </ul>
@@ -58,36 +43,26 @@
     </div>
 </div>
 
-<!-- 引入bootstrap和vue的依赖库 -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<!-- 创建一个vue实例，绑定到id为app的div元素 -->
 <script>
-    // 创建一个vue实例
     var app = new Vue({
-        // 绑定到id为app的div元素
         el: '#app',
-        // 定义vue实例的数据
         data: {
             // 搜索框的内容
             query: '',
             // 搜索结果的数组
             results: []
         },
-        // 定义vue实例的方法
         methods: {
-            // 搜索方法，根据搜索框的内容调用Sensa的API获取搜索结果
             search: function () {
-                // 如果搜索框为空，不进行搜索
                 if (this.query == '') {
                     return;
                 }
                 let f = new FormData();
                 f.append('query', this.query);
-                // 定义Sensa的API地址，使用自己的订阅密钥和市场参数
-                // var url = 'https://api.Sensa.microsoft.com/v7.0/search?q=' + this.query + '&mkt=zh-CN&subscription-key=YOUR_SUBSCRIPTION_KEY';
-                // 使用fetch方法发送请求，获取响应
+                // 发送ajax请求
                 axios.post("/query", f).then((res=>{
                     this.results = res.data;
                     console.log(this.results)
