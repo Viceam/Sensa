@@ -16,6 +16,8 @@ import java.util.List;
 public class SearchController {
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
     private JiebaSegmenter segmenter;
 
     public SearchController(JiebaSegmenter segmenter, String hello) {
