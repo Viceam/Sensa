@@ -5,7 +5,7 @@ words = []
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
-# 读取停止词，写入集合中
+# 读取停止词，写入集合中 集合键名称：stopwords
 def read_words(filename):
     with open("../../../stopwordLists/" + filename, "r", encoding="utf-8") as s1:
         words_ = s1.readlines()
@@ -16,9 +16,4 @@ def read_words(filename):
         conn.sadd("stopwords", word)
 
 
-if __name__ == '__main__':
-    read_words("baidu_stopwords.txt")
-    read_words("cn_stopwords.txt")
-    read_words("hit_stopwords.txt")
-    read_words("scu_stopwords.txt")
-    read_words("stopwords5.txt")
+

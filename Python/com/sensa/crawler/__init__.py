@@ -1,5 +1,6 @@
-from crawlerUtil import do_crawler
+from crawler import do_crawler
 
+# 运行爬虫
 if __name__ == '__main__':
     do_crawler("https://news.gmw.cn/node_4108", "//li/span/a")
     do_crawler("https://guancha.gmw.cn/node_86599", "//ul[@class='channel-newsGroup']/li/span/a")

@@ -20,10 +20,6 @@ public class SearchController {
     @Autowired
     private JiebaSegmenter segmenter;
 
-    public SearchController(JiebaSegmenter segmenter, String hello) {
-        this.segmenter = segmenter;
-    }
-
     @PostMapping("query")
     public List<QueryResult> doSearch(String query)
     {
