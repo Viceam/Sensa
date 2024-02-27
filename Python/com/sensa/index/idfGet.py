@@ -5,13 +5,14 @@ import math
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
+# 计算词的idf
 def idf_get():
     keys = conn.keys()
-    sum = conn.get("news_num")
+    _sum = conn.get("news_num")
     for key in keys:
-        if key.startswith("index") and not key.startswith("indexed"):
+        if key.startswith("idx:"):
             print(key)
-            idf = math.log(int(sum) / conn.zcard(key))
+            idf = math.log(int(_sum) / conn.zcard(key))
             word = key[5:]
             conn.set("idf" + word, idf)
 
