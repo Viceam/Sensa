@@ -1,23 +1,26 @@
-import redis
-import jieba
 import math
+import redis
 
-conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+# 假设这里已经建立了到Redis的连接
+conn = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
-# 计算词的idf
 def idf_get():
-    keys = conn.keys()
-    _sum = conn.get("news_num")
-    for key in keys:
-        if key.startswith("idx:"):
-            print(key)
-            idf = math.log(int(_sum) / conn.zcard(key))
-            word = key[5:]
-            conn.set("idf" + word, idf)
+    _sum = int(conn.get("news_num"))
+    cursor = '0'
+    while True:
+        cursor, keys = conn.scan(cursor=cursor, match="idx:*", count=1000)
+        print(f"Cursor: {cursor}")  # 打印当前游标值
+        for key in keys:
+            word = key.decode('utf-8')[4:]  # 假设键是字节字符串，需要解码
+            doc_count = conn.zcard(key)
+            if doc_count > 0:  # 检查以避免除以零
+                idf = math.log(_sum / doc_count)
+                conn.set("idf:" + word, idf)
+        if cursor == 0:  # 如果游标返回0，表示迭代结束
+            break
 
     print("ok")
 
 
-if __name__ == '__main__':
-    idf_get()
+idf_get()

@@ -5,6 +5,7 @@ conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=Tru
 stopwords = set(conn.smembers("stopwords"))
 
 
+# 建立反向索引 建立后zscore为词频
 def idx_build():
     total = int(conn.get("news_num")) + 1
     # 对所有的新闻
