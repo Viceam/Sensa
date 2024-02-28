@@ -9,6 +9,7 @@ spring:
     password: 1006
     type: com.alibaba.druid.pool.DruidDataSource
   redis:
+    database: 0
     host: localhost
     port: 6379
 

@@ -27,9 +27,13 @@
 
     <!--    搜索结果-->
     <div class="container-fluid mt-3">
-        <div v-if="results.length == 0">
+        <div v-if="results.length === 0 && searching === false">
             <h1>欢迎使用Sensa搜索</h1>
             <p>输入您想要搜索的内容，然后点击搜索按钮或按回车键。</p>
+        </div>
+        <div v-else-if="results.length === 0 && searching === true">
+            <h1>找不到与您的查询相关的内容或信息。</h1>
+            <p>请检查输入字词有无错误或尝试其他查询词。</p>
         </div>
         <div v-else>
             <h3>搜索结果</h3>
@@ -53,11 +57,12 @@
             // 搜索框的内容
             query: '',
             // 搜索结果的数组
-            results: []
+            results: [],
+            searching: false
         },
         methods: {
             search: function () {
-                if (this.query == '') {
+                if (this.query === '') {
                     return;
                 }
                 let f = new FormData();
@@ -65,8 +70,11 @@
                 // 发送ajax请求
                 axios.post("/query", f).then((res=>{
                     this.results = res.data;
-                    console.log(this.results)
-                }))
+                    this.searching = true;
+                    // console.log(this.results)
+                })).catch(err=>{
+                    console.log(err);
+                })
 
                 // fetch(url)
                 //     .then(response => response.json())
