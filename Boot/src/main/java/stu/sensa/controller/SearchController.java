@@ -1,6 +1,16 @@
 package stu.sensa.controller;
 import com.huaban.analysis.jieba.JiebaSegmenter;
 import com.huaban.analysis.jieba.SegToken;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,8 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stu.sensa.pojo.QueryResult;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 @RestController
 @RequestMapping("/")
@@ -63,6 +77,8 @@ public class SearchController {
             }
         }
 
+        Map<String, Double> distances = faissSearch(query, 30);
+
         // 没有任何文章与搜索的关键词有关
         if(articleScores.isEmpty()) {
             return Collections.emptyList();
@@ -92,14 +108,60 @@ public class SearchController {
 
     @GetMapping("/red")
     public String test1() {
-        String key = "news_num";
+        Map<String, Double> map = faissSearch("中国画不能单纯延续传统", 10);
+        for (Map.Entry<String, Double> entry : map.entrySet()) {
+            System.out.println("Index: " + entry.getKey() + ", Distance: " + entry.getValue());
+        }
+        return "ok";
+    }
 
-        ListOperations operations = redisTemplate.opsForList();
-        Object ret = operations.index("news1", 1);
-//        operations.set("fortest", 777);
-//        Object r2 = operations.get("fortest");
-        System.out.println(ret);
-        return "成功" + ret;
+    /**
+     * 发送查询到 FAISS 服务器并解析响应
+     *
+     * @param query 要搜索的查询文本
+     * @param k 返回的最近邻个数
+     * @return 一个包含索引和距离的映射
+     */
+    private Map<String, Double> faissSearch(String query, Integer k) {
+        // 创建 HttpClient 实例
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+            // 构建 JSON 请求体
+            Map<String, Object> data = new HashMap<>();
+            data.put("query", query);
+            data.put("k", k);
+            String requestBody = new Gson().toJson(data);
+
+            // 构建 HttpPost 请求
+            HttpPost post = new HttpPost("http://localhost:5000/search");
+            post.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
+
+            // 发送请求并获取响应
+            try (CloseableHttpResponse response = client.execute(post)) {
+
+                // 解析响应体
+                HttpEntity responseEntity = response.getEntity();
+                String responseBody = EntityUtils.toString(responseEntity);
+                System.out.println(responseBody);
+
+                Gson gson = new Gson();
+
+
+                Type listType = new TypeToken<List<Map<String, Object>>>(){}.getType();
+                List<Map<String, Object>> list = gson.fromJson(responseBody, listType);
+
+                Map<String, Double> resultMap = new HashMap<>();
+                for (Map<String, Object> item : list) {
+                    String index = (String) item.get("index");
+                    Double distance = ((Number) item.get("distance")).doubleValue();
+                    resultMap.put(index, distance);
+                }
+                return resultMap;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }
