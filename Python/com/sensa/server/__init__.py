@@ -6,8 +6,8 @@ import numpy as np
 
 app = Flask(__name__)
 
-model = SentenceTransformer(r"../vector/data/pretrained_model/all-MiniLM-L6-v2")
-index = faiss.read_index(r"../vector/data/sensa.index")
+model = SentenceTransformer(r"../vector/data/pretrained_model/text2vec-base-chinese")
+index = faiss.read_index(r"./faiss.index")
 conn = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
@@ -42,4 +42,4 @@ def search():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000)

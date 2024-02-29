@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import stu.sensa.util.NormalizationUtil;
 
 @RestController
 @RequestMapping("/")
@@ -78,16 +79,56 @@ public class SearchController {
         }
 
         Map<String, Double> distances = faissSearch(query, 30);
+        List<String> toRemove = new ArrayList<>();
+
+        for(Map.Entry<String, Double> entry:distances.entrySet()) {
+            if(entry.getValue() >= 0.25) {
+               toRemove.add(entry.getKey());
+            }
+        }
+
+        for(String key:toRemove) {
+            distances.remove(key);
+        }
+
+        System.out.println(distances);
+        NormalizationUtil.normalizeDistances(distances, articleScores);
+        System.out.println(distances);
+        System.out.println(articleScores);
 
         // 没有任何文章与搜索的关键词有关
-        if(articleScores.isEmpty()) {
+        if(articleScores.isEmpty() && distances.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // 对所有文章按照累计的TF-IDF值进行排序
+        // 接下来计算综合得分 仍然存入articleScores
+        final double K = 0.7;
+
+        // 首先articleScores分数乘K
+        for(Map.Entry<String, Double> entry:articleScores.entrySet()) {
+            articleScores.put(entry.getKey(), entry.getValue() * K);
+        }
+        // 然后加入语义得分
+        for(Map.Entry<String, Double> entry:distances.entrySet()) {
+            String news = entry.getKey();
+            // 同时有关键字得分
+            if(articleScores.containsKey(news)) {
+                articleScores.put(news, articleScores.get(news) + (1. - K) * entry.getValue());
+            }
+            // 没有关键字得分
+            else {
+                articleScores.put(news, (1. - K) * entry.getValue());
+            }
+        }
+
+//        System.out.println(articleScores);
+
+        // 对所有文章按照综合得分进行排序
         List<Map.Entry<String, Double>> sortedArticles = articleScores.entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
                 .collect(Collectors.toList());
+
+        System.out.println(sortedArticles);
 
         // 提取排序后的文章编号列表
         List<String> sortedArticleIds = sortedArticles.stream()
@@ -101,7 +142,6 @@ public class SearchController {
             String title = (String) listOperations.index(article, 1);
             queryResults.add(new QueryResult(url, title, ""));
         }
-//        queryResults.add(new QueryResult("https://www.baidu.com", "百度", "搜索引擎"));
 
         return queryResults;
     }
@@ -142,7 +182,6 @@ public class SearchController {
                 // 解析响应体
                 HttpEntity responseEntity = response.getEntity();
                 String responseBody = EntityUtils.toString(responseEntity);
-                System.out.println(responseBody);
 
                 Gson gson = new Gson();
 
