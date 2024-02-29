@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ch">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="img/sensa.jpg" width="30" height="30" alt="">
+        </a>
+        <a class="navbar-brand" href="#">Sensa</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="切换导航">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="在Sensa中搜索" aria-label="搜索" v-model="query">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" v-on:click.prevent="search">搜索</button>
+            </form>
+        </div>
+    </nav>
+
+    <!--    搜索结果-->
+    <div class="container-fluid mt-3">
+        <div v-if="results.length === 0 && searching === false">
+            <h1>欢迎使用Sensa搜索</h1>
+            <p>输入您想要搜索的内容，然后点击搜索按钮或按回车键。</p>
+        </div>
+        <div v-else-if="results.length === 0 && searching === true">
+            <h1>找不到与您的查询相关的内容或信息。</h1>
+            <p>请检查输入字词有无错误或尝试其他查询词。</p>
+        </div>
+        <div v-else>
+            <h3>搜索结果</h3>
+            <ul class="list-group">
+                <li class="list-group-item" v-for="result in results">
+                    <a :href="result.url"><h5>{{ result.title }}</h5></a>
+                    <p>{{ result.snippet }}</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            // 搜索框的内容
+            query: '',
+            // 搜索结果的数组
+            results: [],
+            searching: false
+        },
+        methods: {
+            search: function () {
+                if (this.query === '') {
+                    return;
+                }
+                let f = new FormData();
+                f.append('query', this.query);
+                // 发送ajax请求
+                axios.post("/query", f).then((res=>{
+                    this.results = res.data;
+                    this.searching = true;
+                    // console.log(this.results)
+                })).catch(err=>{
+                    console.log(err);
+                })
+            }
+        }
+    });
+</script>
+</body>
+</html>
